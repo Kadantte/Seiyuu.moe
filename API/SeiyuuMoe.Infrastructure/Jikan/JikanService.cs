@@ -77,44 +77,50 @@ namespace SeiyuuMoe.Infrastructure.Jikan
 			return new MalSeasonUpdateData(latestYear.Year, latestYear.Season.Last().ToString());
 		}
 
-		public async  Task<MalSeiyuuUpdateData> GetSeiyuuDataAsync(long malId)
+		public async Task<MalSeiyuuFullUpdateData> GetSeiyuuFullDataAsync(long malId)
 		{
-			var parsedData = await _jikanClient.GetPersonAsync(malId);
+			var parsedData = await _jikanClient.GetPersonFullDataAsync(malId);
 
 			if (parsedData?.Data is null)
 			{
 				return null;
 			}
-			
-			return new MalSeiyuuUpdateData(
-				parsedData.Data.Name,
-				parsedData.Data.About,
-				$"{parsedData.Data.FamilyName ?? string.Empty} {parsedData.Data.GivenName ?? string.Empty}".Trim(),
-				EmptyStringIfPlaceholder(parsedData.Data.Images?.JPG?.ImageUrl),
-				parsedData.Data.MemberFavorites,
-				parsedData.Data.Birthday
+
+			return new MalSeiyuuFullUpdateData(
+				MapSeiyuuData(parsedData.Data),
+				MapVoiceActingRoles(parsedData.Data.VoiceActingRoles)
 			);
 		}
 
-		public async Task<ICollection<MalVoiceActingRoleUpdateData>> GetSeiyuuVoiceActingRolesAsync(long malId)
+		private static MalSeiyuuUpdateData MapSeiyuuData(Person person)
 		{
-			var parsedData = await _jikanClient.GetPersonVoiceActingRolesAsync(malId);
+			return new MalSeiyuuUpdateData(
+				person.Name,
+				person.About,
+				$"{person.FamilyName ?? string.Empty} {person.GivenName ?? string.Empty}".Trim(),
+				EmptyStringIfPlaceholder(person.Images?.JPG?.ImageUrl),
+				person.MemberFavorites,
+				person.Birthday
+			);
+		}
 
-			if (parsedData?.Data is null)
+		private static ICollection<MalVoiceActingRoleUpdateData> MapVoiceActingRoles(ICollection<VoiceActingRole> voiceActingRoles)
+		{
+			if (voiceActingRoles is null)
 			{
 				return new List<MalVoiceActingRoleUpdateData>();
 			}
 
-			return parsedData.Data?.Select(
+			return voiceActingRoles.Select(
 				x => new MalVoiceActingRoleUpdateData(
 					x.Anime.MalId,
 					x.Character.MalId,
 					x.Role
 				)
-			).ToList() ?? new List<MalVoiceActingRoleUpdateData>();
+			).ToList();
 		}
 
-		private string EmptyStringIfPlaceholder(string imageUrl)
+		private static string EmptyStringIfPlaceholder(string imageUrl)
 		{
 			var isEmptyOrPlaceholder = string.IsNullOrWhiteSpace(imageUrl) ||
 				imageUrl.Equals("https://cdn.myanimelist.net/images/questionmark_23.gif") ||

@@ -12,8 +12,6 @@ namespace SeiyuuMoe.Domain.Services
 
 		Task<MalCharacterUpdateData> GetCharacterDataAsync(long malId);
 
-		Task<MalSeiyuuUpdateData> GetSeiyuuDataAsync(long malId);
-		
-		Task<ICollection<MalVoiceActingRoleUpdateData>> GetSeiyuuVoiceActingRolesAsync(long malId);
+		Task<MalSeiyuuFullUpdateData> GetSeiyuuFullDataAsync(long malId);
 	}
 }

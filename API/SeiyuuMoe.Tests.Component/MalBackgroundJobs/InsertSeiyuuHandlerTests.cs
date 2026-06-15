@@ -37,7 +37,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(2), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(2), Times.Once);
 		}
 
 		[Fact]
@@ -54,7 +54,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(lastId + 1), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(lastId + 1), Times.Once);
 		}
 
 		[Fact]
@@ -72,11 +72,11 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			// Then
 			using (new AssertionScope())
 			{
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(2), Times.Once);
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(3), Times.Once);
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(4), Times.Once);
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(5), Times.Once);
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(6), Times.Once);
+				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(2), Times.Once);
+				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(3), Times.Once);
+				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(4), Times.Once);
+				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(5), Times.Once);
+				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(6), Times.Once);
 			}
 		}
 
@@ -138,7 +138,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(It.IsAny<int>()), Times.Never);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(It.IsAny<int>()), Times.Never);
 			dbContext.Seiyuus.Should().ContainSingle();
 		}
 
@@ -169,7 +169,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				await action.Should().ThrowExactlyAsync<JikanRequestException>();
 				dbContext.Seiyuus.Should().ContainSingle();
 			}
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(startingMalId + 1), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
 		}
 
 		[Fact]
@@ -194,7 +194,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(startingMalId + 1), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
 			dbContext.Seiyuus.Should().ContainSingle();
 		}
 
@@ -243,7 +243,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(startingMalId + 1), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
 			dbContext.Seiyuus.Should().ContainSingle();
 		}
 
@@ -292,7 +292,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(startingMalId + 1), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
 			dbContext.Seiyuus.Should().ContainSingle();
 		}
 
@@ -358,7 +358,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(startingSeiyuuMalId + 1), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
 			dbContext.Seiyuus.Should().ContainSingle();
 		}
 
@@ -427,7 +427,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(startingSeiyuuMalId + 1), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
 			jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
 			jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
 			dbContext.Seiyuus.Should().HaveCount(2);
@@ -518,7 +518,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(startingSeiyuuMalId + 1), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
 			jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
 			jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
 			dbContext.Seiyuus.Should().HaveCount(2);
@@ -612,7 +612,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(startingSeiyuuMalId + 1), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
 			jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
 			jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
 			dbContext.Seiyuus.Should().HaveCount(2);
@@ -725,7 +725,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(startingSeiyuuMalId + 1), Times.Once);
+			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
 			jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
 			jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
 			using (new AssertionScope())

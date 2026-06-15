@@ -76,16 +76,15 @@ namespace SeiyuuMoe.MalBackgroundJobs.Application.Handlers
 				return;
 			}
 
-			var seiyuuData = await _malApiService.GetSeiyuuDataAsync(updateSeiyuuMessage.MalId);
-			var rolesData = await _malApiService.GetSeiyuuVoiceActingRolesAsync(updateSeiyuuMessage.MalId);
+			var seiyuuFullData = await _malApiService.GetSeiyuuFullDataAsync(updateSeiyuuMessage.MalId);
 
-			if (seiyuuData == null || !JikanParserHelper.IsJapanese(seiyuuData.JapaneseName) || rolesData is null || !rolesData.Any())
+			if (seiyuuFullData?.SeiyuuData == null || !JikanParserHelper.IsJapanese(seiyuuFullData.SeiyuuData.JapaneseName) || seiyuuFullData.VoiceActingRoles is null || !seiyuuFullData.VoiceActingRoles.Any())
 			{
 				return;
 			}
 
-			await InsertSeiyuuAsync(updateSeiyuuMessage, seiyuuData);
-			await InsertRolesAsync(updateSeiyuuMessage, rolesData);
+			await InsertSeiyuuAsync(updateSeiyuuMessage, seiyuuFullData.SeiyuuData);
+			await InsertRolesAsync(updateSeiyuuMessage, seiyuuFullData.VoiceActingRoles);
 		}
 
 		private async Task InsertSeiyuuAsync(UpdateSeiyuuMessage updateSeiyuuMessage, MalSeiyuuUpdateData updateData)

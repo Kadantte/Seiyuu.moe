@@ -49,19 +49,17 @@ namespace SeiyuuMoe.MalBackgroundJobs.Application.Handlers
 				return;
 			}
 
-			var updateData = await _malApiService.GetSeiyuuDataAsync(updateSeiyuuMessage.MalId);
+			var seiyuuFullData = await _malApiService.GetSeiyuuFullDataAsync(updateSeiyuuMessage.MalId);
 
-			if (updateData == null)
+			if (seiyuuFullData?.SeiyuuData == null)
 			{
 				return;
 			}
 
-			UpdatePerson(seiyuuToUpdate, updateData);
+			UpdatePerson(seiyuuToUpdate, seiyuuFullData.SeiyuuData);
 			await _seiyuuRepository.UpdateAsync(seiyuuToUpdate);
 
-			var rolesUpdateDate = await _malApiService.GetSeiyuuVoiceActingRolesAsync(updateSeiyuuMessage.MalId);
-
-			await UpdateRolesAsync(updateSeiyuuMessage, rolesUpdateDate);
+			await UpdateRolesAsync(updateSeiyuuMessage, seiyuuFullData.VoiceActingRoles);
 		}
 
 		private void UpdatePerson(Seiyuu seiyuuToUpdate, MalSeiyuuUpdateData updateData)

@@ -58,25 +58,23 @@ namespace SeiyuuMoe.Tests.Common.Builders.Jikan
 
 		public JikanServiceBuilder WithPersonReturned(Person person, ICollection<VoiceActingRole> voiceActingRoles)
 		{
-			JikanClient.Setup(x => x.GetPersonAsync(It.IsAny<long>()))
-				.ReturnsAsync(new BaseJikanResponse<Person>() {Data = person});
-			JikanClient.Setup(x => x.GetPersonVoiceActingRolesAsync(It.IsAny<long>()))
-				.ReturnsAsync(new BaseJikanResponse<ICollection<VoiceActingRole>>() {Data = voiceActingRoles});
+			JikanClient.Setup(x => x.GetPersonFullDataAsync(It.IsAny<long>()))
+				.ReturnsAsync(new BaseJikanResponse<PersonFull>() { Data = CreatePersonFull(person, voiceActingRoles) });
 			return this;
 		}
 
 		public JikanServiceBuilder WithGetPersonThrowing()
 		{
-			JikanClient.Setup(x => x.GetPersonAsync(It.IsAny<long>()))
+			JikanClient.Setup(x => x.GetPersonFullDataAsync(It.IsAny<long>()))
 				.ThrowsAsync(new JikanRequestException());
 			return this;
 		}
 
 		public JikanServiceBuilder WithTwoPersonsReturned(Person firstPerson, Person secondPerson)
 		{
-			JikanClient.SetupSequence(x => x.GetPersonAsync(It.IsAny<long>()))
-				.ReturnsAsync(new BaseJikanResponse<Person>() {Data = firstPerson})
-				.ReturnsAsync(new BaseJikanResponse<Person>() {Data = secondPerson});
+			JikanClient.SetupSequence(x => x.GetPersonFullDataAsync(It.IsAny<long>()))
+				.ReturnsAsync(new BaseJikanResponse<PersonFull>() { Data = CreatePersonFull(firstPerson, null) })
+				.ReturnsAsync(new BaseJikanResponse<PersonFull>() { Data = CreatePersonFull(secondPerson, null) });
 			return this;
 		}
 
@@ -92,6 +90,29 @@ namespace SeiyuuMoe.Tests.Common.Builders.Jikan
 			JikanClient.Setup(x => x.GetSeasonArchiveAsync())
 				.ThrowsAsync(new JikanRequestException());
 			return this;
+		}
+
+		private static PersonFull CreatePersonFull(Person person, ICollection<VoiceActingRole> voiceActingRoles)
+		{
+			if (person is null)
+			{
+				return null;
+			}
+
+			return new PersonFull
+			{
+				MalId = person.MalId,
+				Url = person.Url,
+				Name = person.Name,
+				GivenName = person.GivenName,
+				FamilyName = person.FamilyName,
+				AlternativeNames = person.AlternativeNames,
+				About = person.About,
+				Images = person.Images,
+				MemberFavorites = person.MemberFavorites,
+				Birthday = person.Birthday,
+				VoiceActingRoles = voiceActingRoles
+			};
 		}
 	}
 }
