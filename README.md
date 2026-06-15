@@ -6,6 +6,10 @@
 
 Current version can be found under this [link](https://seiyuu.moe).
 
+## Developer Docs
+
+Repository guidance starts in [AGENTS.md](AGENTS.md). Durable project docs live under [docs/](docs/index.md).
+
 ## Build Setup
 
 ### App
