@@ -238,6 +238,28 @@ Resources:
       SourceArn: 
         !GetAtt ScheduleSeiyuuUpdateRule.Arn
 
+  ScheduleSeiyuuMidweekRule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: cron(0 12 ? * WED *)
+      Name: !Sub schedule-seiyuu-midweek-rule-${EnvironmentType}
+      State: !If
+        - IsProdEnvironment
+        - ENABLED
+        - DISABLED
+      Targets:
+        - Arn: !GetAtt ScheduleSeiyuuUpdate.Arn
+          Id: LambdaTargetMidweek
+
+  ScheduleSeiyuuMidweekPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ScheduleSeiyuuUpdate
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn:
+        !GetAtt ScheduleSeiyuuMidweekRule.Arn
+
   ScheduleSeiyuuUpdate:
     Type: AWS::Serverless::Function
     Properties:
