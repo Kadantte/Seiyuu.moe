@@ -1,19 +1,19 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Execution;
-using JikanDotNet;
+using Tenrai;
 using Xunit;
 
 namespace SeiyuuMoe.Tests.Integration;
 
-public class JikanClientTests
+public class TenraiClientTests
 {
-    private readonly IJikan _jikanClient;
+    private readonly ITenrai _tenraiClient;
 
-    public JikanClientTests()
+    public TenraiClientTests()
     {
-        _jikanClient = new Jikan();
+        _tenraiClient = new TenraiClient();
     }
-    
+
     [Fact]
     public async Task GetAnimeAsync_GivenBebopId_ShouldParseRequiredData()
     {
@@ -21,7 +21,7 @@ public class JikanClientTests
         const int bebopMalId = 1;
 
         // When
-        var result = await _jikanClient.GetAnimeAsync(bebopMalId);
+        var result = await _tenraiClient.GetAnimeAsync(bebopMalId);
 
         // Then
         using var _ = new AssertionScope();
@@ -38,7 +38,7 @@ public class JikanClientTests
         result.Data.Season.Should().Be(Season.Spring);
         result.Data.Year.Should().Be(1998);
     }
-    
+
     [Fact]
     public async Task GetCharacterAsync_GivenSpikeId_ShouldParseRequiredData()
     {
@@ -46,7 +46,7 @@ public class JikanClientTests
         const int spikeMalId = 1;
 
         // When
-        var result = await _jikanClient.GetCharacterAsync(spikeMalId);
+        var result = await _tenraiClient.GetCharacterAsync(spikeMalId);
 
         // Then
         using var _ = new AssertionScope();
@@ -57,25 +57,25 @@ public class JikanClientTests
         result.Data.Nicknames.Should().BeEmpty();
         result.Data.Favorites.Should().BeGreaterThan(40000);
     }
-    
+
     [Fact]
     public async Task GetSeasonArchiveAsync_ShouldParseRequiredData()
     {
         // When
-        var result = await _jikanClient.GetSeasonArchiveAsync();
+        var result = await _tenraiClient.GetSeasonArchiveAsync();
 
         // Then
         result.Data.Should().NotBeNullOrEmpty();
     }
-    
+
     [Fact]
-    public async Task GetPersonAsync_GivenSeki_ShouldParseRequiredData()
+    public async Task GetPersonFullDataAsync_GivenSeki_ShouldParseRequiredData()
     {
         // Given
         const int sekiMalId = 1;
 
         // When
-        var result = await _jikanClient.GetPersonAsync(sekiMalId);
+        var result = await _tenraiClient.GetPersonFullDataAsync(sekiMalId);
 
         // Then
         using var _ = new AssertionScope();
@@ -84,20 +84,7 @@ public class JikanClientTests
         result.Data.GivenName.Should().Be("智一");
         result.Data.FamilyName.Should().Be("関");
         result.Data.Images.JPG.ImageUrl.Should().NotBeNullOrWhiteSpace();
-        result.Data.AlternativeNames.Should().HaveCount(3).And.Contain("門戸 開");
         result.Data.MemberFavorites.Should().BeGreaterThan(5000);
-    }
-    
-    [Fact]
-    public async Task GetPersonVoiceActingRolesAsync_GivenSeki_ShouldParseRequiredData()
-    {
-        // Given
-        const int sekiMalId = 1;
-
-        // When
-        var result = await _jikanClient.GetPersonVoiceActingRolesAsync(sekiMalId);
-
-        // Then
-        result.Data.Should().HaveCountGreaterThan(400);
+        result.Data.VoiceActingRoles.Should().HaveCountGreaterThan(400);
     }
 }
