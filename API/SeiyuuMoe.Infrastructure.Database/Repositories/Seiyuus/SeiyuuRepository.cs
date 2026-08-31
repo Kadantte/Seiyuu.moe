@@ -27,11 +27,6 @@ namespace SeiyuuMoe.Infrastructure.Database.Seiyuus
 			await _dbContext.SaveChangesAsync();
 		}
 
-		public Task<Dictionary<Guid, long>> GetAllIdsAsync()
-			=> _dbContext.Seiyuus.ToDictionaryAsync(x => x.Id, x => x.MalId);
-
-		public Task<int> GetSeiyuuCountAsync() => _dbContext.Seiyuus.CountAsync();
-
 		public Task<Seiyuu> GetAsync(long seiyuuMalId)
 			=> _dbContext.Seiyuus.FirstOrDefaultAsync(x => x.MalId == seiyuuMalId);
 
@@ -59,12 +54,6 @@ namespace SeiyuuMoe.Infrastructure.Database.Seiyuus
 			seiyuu.ModificationDate = DateTime.UtcNow;
 			_dbContext.Update(seiyuu);
 			await _dbContext.SaveChangesAsync();
-		}
-
-		public async Task<long?> GetLastSeiyuuMalId()
-		{
-			var lastSeiyuu = await _dbContext.Seiyuus.OrderBy(x => x.MalId).LastOrDefaultAsync();
-			return lastSeiyuu?.MalId;
 		}
 
 		public async Task<IReadOnlyList<SeiyuuScheduleItem>> GetOlderThanModifiedDate(DateTime olderThan, int pageSize = 150, DateTime? afterModificationDate = null, Guid? afterId = null)

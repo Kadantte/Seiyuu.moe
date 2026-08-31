@@ -16,10 +16,10 @@ Seiyuu.moe is split into a Nuxt frontend under `App/` and a .NET backend under `
 
 `API/Directory.Build.props` sets the shared target framework to `net10.0`, and `API/Directory.Packages.props` centrally manages package versions.
 
-- `SeiyuuMoe.Domain` contains entities, value objects, comparison entities, repository interfaces, schedule items, publisher contracts, and MAL update data contracts.
-- `SeiyuuMoe.Application` contains query handlers, DTOs, validators, extension methods, and application-level Autofac registrations.
+- `SeiyuuMoe.Domain` contains entities, comparison entities, repository interfaces, schedule items, publisher contracts, and MAL update data contracts.
+- `SeiyuuMoe.Application` contains query handlers, DTOs, extension methods, and application-level Autofac registrations.
 - `SeiyuuMoe.Infrastructure` contains external-service implementations for Jikan, AWS S3/SQS, configuration, and logging.
-- `SeiyuuMoe.Infrastructure.Database` contains Entity Framework Core repositories, converters, configuration, and migrations.
+- `SeiyuuMoe.Infrastructure.Database` contains Entity Framework Core repositories, configuration, and migrations.
 - `SeiyuuMoe.API` contains ASP.NET Core controllers, startup, hosting, and dependency-injection wiring.
 - `SeiyuuMoe.MalBackgroundJobs.Application` contains background-job handlers and helpers for MAL/Jikan update workflows.
 - `SeiyuuMoe.MalBackgroundJobs.Lambda` exposes background jobs as AWS Lambda functions.

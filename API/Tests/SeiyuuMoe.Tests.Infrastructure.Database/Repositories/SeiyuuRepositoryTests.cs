@@ -140,38 +140,6 @@ namespace SeiyuuMoe.Tests.Infrastructure.Database
 		}
 
 		[Fact]
-		public async Task CountAsync_GivenNoSeiyuu_ShouldReturnZero()
-		{
-			// Given
-			var dbContext = InMemoryDbProvider.GetDbContext();
-			var repository = new SeiyuuRepository(dbContext);
-
-			// When
-			var result = await repository.GetSeiyuuCountAsync();
-
-			// Then
-			result.Should().Be(0);
-		}
-
-		[Fact]
-		public async Task CountAsync_GivenSingleSeiyuu_ShouldReturnOne()
-		{
-			// Given
-			var dbContext = InMemoryDbProvider.GetDbContext();
-			var repository = new SeiyuuRepository(dbContext);
-			var seiyuu = new SeiyuuBuilder().WithName("Test1").Build();
-
-			await dbContext.Seiyuus.AddAsync(seiyuu);
-			await dbContext.SaveChangesAsync();
-
-			// When
-			var result = await repository.GetSeiyuuCountAsync();
-
-			// Then
-			result.Should().Be(1);
-		}
-
-		[Fact]
 		public async Task GetAsync_GivenNoSeiyuu_ShouldReturnNull()
 		{
 			// Given
@@ -291,63 +259,6 @@ namespace SeiyuuMoe.Tests.Infrastructure.Database
 				result.About.Should().Be(expectedAbout);
 				result.Popularity.Should().Be(expectedPopularity);
 			}
-		}
-
-		[Fact]
-		public async Task GetAllIdsAsync_GivenNoSeiyuu_ShouldReturnEmpty()
-		{
-			// Given
-			var dbContext = InMemoryDbProvider.GetDbContext();
-			var repository = new SeiyuuRepository(dbContext);
-
-			// When
-			var result = await repository.GetAllIdsAsync();
-
-			// Then
-			result.Should().BeEmpty();
-		}
-
-		[Fact]
-		public async Task GetAllIdsAsync_GivenSingleSeiyuu_ShouldReturnSingle()
-		{
-			// Given
-			var dbContext = InMemoryDbProvider.GetDbContext();
-			var repository = new SeiyuuRepository(dbContext);
-			var seiyuu = new SeiyuuBuilder().WithName("Test1").Build();
-
-			await dbContext.Seiyuus.AddAsync(seiyuu);
-			await dbContext.SaveChangesAsync();
-
-			// When
-			var result = await repository.GetAllIdsAsync();
-
-			// Then
-			result.Should().HaveCount(1);
-		}
-
-		[Fact]
-		public async Task GetAllIdsAsync_GivenMultipleSeiyuu_ShouldReturnMultiple()
-		{
-			// Given
-			var dbContext = InMemoryDbProvider.GetDbContext();
-			var repository = new SeiyuuRepository(dbContext);
-			var seiyuuCollection = new List<Seiyuu>
-			{
-				new SeiyuuBuilder().WithName("Test1").Build(),
-				new SeiyuuBuilder().WithName("Test2").Build(),
-				new SeiyuuBuilder().WithName("Test3").Build(),
-				new SeiyuuBuilder().WithName("Test4").Build(),
-				new SeiyuuBuilder().WithName("Test5").Build()
-			};
-
-			await dbContext.Seiyuus.AddRangeAsync(seiyuuCollection);
-			await dbContext.SaveChangesAsync();
-
-			// When
-			var result = await repository.GetAllIdsAsync();
-
-			// Then
-			result.Should().HaveCount(5);
 		}
 
 		[Fact]

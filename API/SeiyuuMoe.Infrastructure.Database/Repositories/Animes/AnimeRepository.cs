@@ -27,13 +27,6 @@ namespace SeiyuuMoe.Infrastructure.Database.Animes
 			await _dbContext.SaveChangesAsync();
 		}
 
-		public async Task<IReadOnlyList<Anime>> GetAllAsync()
-			=> await _dbContext.Animes
-			.Include(a => a.Type)
-			.Include(a => a.Status)
-			.Include(a => a.Season)
-			.ToListAsync();
-
 		public async Task<IReadOnlyList<Anime>> GetAllBySeasonAndTypeAsync(long seasonId, AnimeTypeId animeTypeId)
 			=> await _dbContext.Animes
 			.Include(a => a.Type)
@@ -42,32 +35,12 @@ namespace SeiyuuMoe.Infrastructure.Database.Animes
 			.Where(x => x.SeasonId == seasonId && (x.TypeId == animeTypeId || animeTypeId == AnimeTypeId.AllTypes))
 			.ToListAsync();
 
-		public Task<int> GetAnimeCountAsync() => _dbContext.Animes.CountAsync();
-
 		public Task<Anime> GetAsync(long animeMalId)
 			=> _dbContext.Animes
 			.Include(x => x.Type)
 			.Include(x => x.Status)
 			.Include(x => x.Season)
 			.FirstOrDefaultAsync(x => x.MalId == animeMalId);
-
-		public async Task<PagedResult<Anime>> GetOrderedPageByAsync(Expression<Func<Anime, bool>> predicate, int page = 0, int pageSize = 10)
-		{
-			var entities = _dbContext.Animes.Where(predicate);
-			var totalCount = await entities.CountAsync();
-			var results = await entities
-				.Skip(page * pageSize)
-				.Take(pageSize)
-				.ToListAsync();
-
-			return new PagedResult<Anime>
-			{
-				Results = results,
-				Page = page,
-				PageSize = pageSize,
-				TotalCount = totalCount
-			};
-		}
 
 		public async Task<IReadOnlyList<AnimeScheduleItem>> GetOlderThanModifiedDate(DateTime olderThan, int pageSize = 150, DateTime? afterModificationDate = null, Guid? afterId = null)
 		{

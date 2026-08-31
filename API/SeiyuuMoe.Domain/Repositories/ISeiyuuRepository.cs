@@ -18,12 +18,6 @@ namespace SeiyuuMoe.Domain.Repositories
 
 		Task UpdateAsync(Seiyuu seiyuu);
 
-		Task<Dictionary<Guid, long>> GetAllIdsAsync();
-
-		Task<int> GetSeiyuuCountAsync();
-
-		Task<long?> GetLastSeiyuuMalId();
-
 		Task<IReadOnlyList<SeiyuuScheduleItem>> GetOlderThanModifiedDate(DateTime olderThan, int pageSize = 150, DateTime? afterModificationDate = null, Guid? afterId = null);
 	}
 }

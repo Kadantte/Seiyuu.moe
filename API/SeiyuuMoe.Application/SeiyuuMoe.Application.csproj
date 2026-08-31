@@ -4,10 +4,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\SeiyuuMoe.Domain\SeiyuuMoe.Domain.csproj" />
     <ProjectReference Include="..\SeiyuuMoe.Infrastructure\SeiyuuMoe.Infrastructure.csproj" />
   </ItemGroup>

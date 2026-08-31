@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using SeiyuuMoe.Infrastructure.Database.Animes;
-using SeiyuuMoe.Infrastructure.Database.Blacklisting;
 using SeiyuuMoe.Infrastructure.Database.Characters;
 using SeiyuuMoe.Infrastructure.Database.Context;
 using SeiyuuMoe.Infrastructure.Database.Seasons;
@@ -16,7 +15,6 @@ namespace SeiyuuMoe.API.DI
 
 			builder.RegisterType<AnimeRepository>().AsImplementedInterfaces();
 			builder.RegisterType<AnimeRoleRepository>().AsImplementedInterfaces();
-			builder.RegisterType<BlacklistedIdRepository>().AsImplementedInterfaces();
 			builder.RegisterType<CharacterRepository>().AsImplementedInterfaces();
 			builder.RegisterType<SeasonRepository>().AsImplementedInterfaces();
 			builder.RegisterType<SeasonRoleRepository>().AsImplementedInterfaces();

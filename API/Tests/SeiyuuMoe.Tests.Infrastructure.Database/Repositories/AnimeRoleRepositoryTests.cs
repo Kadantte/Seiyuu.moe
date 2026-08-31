@@ -105,42 +105,42 @@ namespace SeiyuuMoe.Tests.Infrastructure.Database
 		}
 
 		[Fact]
-		public async Task GetAllRolesInAnimeAsync_GivenNoRoles_ShouldReturnEmpty()
+		public async Task GetAllRolesInAnimeByMalIdAsync_GivenNoRoles_ShouldReturnEmpty()
 		{
 			// Given
-			var animeId = Guid.NewGuid();
+			const int animeMalId = 1;
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var repository = new AnimeRoleRepository(dbContext);
 
 			// When
-			var result = await repository.GetAllRolesInAnimeAsync(animeId);
+			var result = await repository.GetAllRolesInAnimeByMalIdAsync(animeMalId);
 
 			// Then
 			result.Should().BeEmpty();
 		}
 
 		[Fact]
-		public async Task GetAllRolesInAnimeAsync_GivenNoRolesForAnime_ShouldReturnEmpty()
+		public async Task GetAllRolesInAnimeByMalIdAsync_GivenNoRolesForAnime_ShouldReturnEmpty()
 		{
 			// Given
-			var animeId = Guid.NewGuid();
+			const int animeMalId = 2;
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var repository = new AnimeRoleRepository(dbContext);
 
-			var anime = new AnimeBuilder().WithMalId(2).WithId(animeId).Build();
+			var anime = new AnimeBuilder().WithMalId(animeMalId).Build();
 
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
 			// When
-			var result = await repository.GetAllRolesInAnimeAsync(animeId);
+			var result = await repository.GetAllRolesInAnimeByMalIdAsync(animeMalId);
 
 			// Then
 			result.Should().BeEmpty();
 		}
 
 		[Fact]
-		public async Task GetAllRolesInAnimeAsync_GivenAnimeWithSingleRole_ShouldReturnSingle()
+		public async Task GetAllRolesInAnimeByMalIdAsync_GivenAnimeWithSingleRole_ShouldReturnSingle()
 		{
 			// Given
 			const int animeMalId = 1;
@@ -159,14 +159,14 @@ namespace SeiyuuMoe.Tests.Infrastructure.Database
 			await dbContext.SaveChangesAsync();
 
 			// When
-			var result = await repository.GetAllRolesInAnimeAsync(animeId);
+			var result = await repository.GetAllRolesInAnimeByMalIdAsync(animeMalId);
 
 			// Then
 			result.Should().ContainSingle();
 		}
 
 		[Fact]
-		public async Task GetAllRolesInAnimeAsync_GivenAnimeWithSingleRoleInLanguageOtherThanJapanese_ShouldReturnEmpty()
+		public async Task GetAllRolesInAnimeByMalIdAsync_GivenAnimeWithSingleRoleInLanguageOtherThanJapanese_ShouldReturnEmpty()
 		{
 			// Given
 			const int animeMalId = 1;
@@ -185,14 +185,14 @@ namespace SeiyuuMoe.Tests.Infrastructure.Database
 			await dbContext.SaveChangesAsync();
 
 			// When
-			var result = await repository.GetAllRolesInAnimeAsync(animeId);
+			var result = await repository.GetAllRolesInAnimeByMalIdAsync(animeMalId);
 
 			// Then
 			result.Should().BeEmpty();
 		}
 
 		[Fact]
-		public async Task GetAllRolesInAnimeAsync_GivenMultipleRoles_ShouldReturnMultiple()
+		public async Task GetAllRolesInAnimeByMalIdAsync_GivenMultipleRoles_ShouldReturnMultiple()
 		{
 			// Given
 			const int animeMalId = 1;
@@ -215,7 +215,7 @@ namespace SeiyuuMoe.Tests.Infrastructure.Database
 			await dbContext.SaveChangesAsync();
 
 			// When
-			var result = await repository.GetAllRolesInAnimeAsync(animeId);
+			var result = await repository.GetAllRolesInAnimeByMalIdAsync(animeMalId);
 
 			// Then
 			result.Should().HaveCount(5);

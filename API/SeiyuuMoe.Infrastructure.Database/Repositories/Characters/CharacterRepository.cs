@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using SeiyuuMoe.Domain.Entities;
 using SeiyuuMoe.Domain.Repositories;
 using SeiyuuMoe.Domain.ScheduleItems;
-using SeiyuuMoe.Domain.WebEssentials;
 using SeiyuuMoe.Infrastructure.Database.Context;
 using System;
 using System.Collections.Generic;
@@ -28,25 +27,6 @@ namespace SeiyuuMoe.Infrastructure.Database.Characters
 
 		public Task<AnimeCharacter> GetAsync(long characterMalId)
 			=> _dbContext.AnimeCharacters.FirstOrDefaultAsync(x => x.MalId == characterMalId);
-
-		public Task<int> GetCountAsync() => _dbContext.AnimeCharacters.CountAsync();
-
-		public async Task<PagedResult<AnimeCharacter>> GetPageAsync(int page = 0, int pageSize = 100)
-		{
-			var totalCount = await _dbContext.AnimeCharacters.CountAsync();
-			var results = await _dbContext.AnimeCharacters
-				.Skip(page * pageSize)
-				.Take(pageSize)
-				.ToListAsync();
-
-			return new PagedResult<AnimeCharacter>
-			{
-				Results = results,
-				Page = page,
-				PageSize = pageSize,
-				TotalCount = totalCount
-			};
-		}
 
 		public async Task<IReadOnlyList<CharacterScheduleItem>> GetOlderThanModifiedDate(DateTime olderThan, int pageSize = 150, DateTime? afterModificationDate = null, Guid? afterId = null)
 		{
