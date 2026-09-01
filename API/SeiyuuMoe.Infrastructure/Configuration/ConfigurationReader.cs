@@ -38,8 +38,6 @@ namespace SeiyuuMoe.Infrastructure.Configuration
 				.Get<MalBgJobsScheduleConfiguration>()
 				?? throw new InvalidOperationException("Configuration section 'ScheduleConfiguration' is missing or invalid.");
 
-		public static string JikanUrl
-			=> Config["JikanUrl"]
-				?? throw new InvalidOperationException("Configuration value 'JikanUrl' is missing.");
+		public static string TenraiServerKey => Config["TenraiServerKey"];
 	}
 }

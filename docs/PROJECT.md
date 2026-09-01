@@ -17,13 +17,13 @@ Seiyuu.moe helps users discover connections between Japanese voice actors and an
 - Character: a role played by a seiyuu in an anime.
 - Season: a year and season grouping used for seasonal summaries.
 - Main role: a role flagged as primary enough to be included by the main-roles-only filters.
-- MAL: MyAnimeList, used as an upstream data source through Jikan.
-- Jikan: the unofficial MyAnimeList API used by the backend infrastructure and background jobs.
+- MAL: MyAnimeList, used as an upstream data source through Tenrai.
+- Tenrai: the unofficial MyAnimeList REST API used by the backend infrastructure and background jobs (drop-in successor to Jikan v4, available at https://api.tenrai.org/v1).
 
 ## External Services
 
 - The frontend talks to the backend API configured in `App/nuxt.config.js`.
-- The backend uses Jikan for MAL data access.
+- The backend uses Tenrai for MAL data access.
 - Infrastructure projects include AWS S3 and SQS integrations for background job workflows.
 - Database access is implemented with Entity Framework Core and Pomelo MySQL.
 

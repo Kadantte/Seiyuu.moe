@@ -1,12 +1,12 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Execution;
-using JikanDotNet;
-using JikanDotNet.Exceptions;
+using Tenrai;
+using Tenrai.Exceptions;
 using SeiyuuMoe.Domain.Services;
 using SeiyuuMoe.Infrastructure.Database.Context;
 using SeiyuuMoe.Infrastructure.Database.Seasons;
 using SeiyuuMoe.MalBackgroundJobs.Application.Handlers;
-using SeiyuuMoe.Tests.Common.Builders.Jikan;
+using SeiyuuMoe.Tests.Common.Builders.Tenrai;
 using SeiyuuMoe.Tests.Common.Builders.Model;
 using SeiyuuMoe.Tests.Common.Helpers;
 using System.Collections.Generic;
@@ -30,8 +30,8 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Year = 2000
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithLastSeasonArchiveReturned(returnedLastSeason);
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithLastSeasonArchiveReturned(returnedLastSeason);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			// When
 			await handler.HandleAsync();
@@ -46,8 +46,8 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
 
-			var jikanServiceBuilder = new JikanServiceBuilder();
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var tenraiServiceBuilder = new TenraiServiceBuilder();
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			// When
 			await handler.HandleAsync();
@@ -57,12 +57,12 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 		}
 
 		[Fact]
-		public async Task HandleAsync_GivenExceptionFromJikan_ShouldNotAddNewSeason()
+		public async Task HandleAsync_GivenExceptionFromTenrai_ShouldNotAddNewSeason()
 		{
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder().WithGetSeasonArchiveThrowing();
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithGetSeasonArchiveThrowing();
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			// When
 			var action = handler.Awaiting(x => x.HandleAsync());
@@ -70,7 +70,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			// Then
 			using (new AssertionScope())
 			{
-				await action.Should().ThrowExactlyAsync<JikanRequestException>();
+				await action.Should().ThrowExactlyAsync<TenraiRequestException>();
 				dbContext.AnimeSeasons.Should().BeEmpty();
 			}
 		}
@@ -96,8 +96,8 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(season);
 			await dbContext.SaveChangesAsync();
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithLastSeasonArchiveReturned(returnedLastSeason);
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithLastSeasonArchiveReturned(returnedLastSeason);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			// When
 			await handler.HandleAsync();
@@ -127,8 +127,8 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(season);
 			await dbContext.SaveChangesAsync();
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithLastSeasonArchiveReturned(returnedLastSeason);
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithLastSeasonArchiveReturned(returnedLastSeason);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			// When
 			await handler.HandleAsync();
@@ -149,8 +149,8 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Year = 2000
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithLastSeasonArchiveReturned(returnedLastSeason);
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithLastSeasonArchiveReturned(returnedLastSeason);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			// When
 			await handler.HandleAsync();
@@ -187,8 +187,8 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddRangeAsync(seasons);
 			await dbContext.SaveChangesAsync();
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithLastSeasonArchiveReturned(returnedLastSeason);
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithLastSeasonArchiveReturned(returnedLastSeason);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			// When
 			await handler.HandleAsync();

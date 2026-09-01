@@ -1,10 +1,10 @@
-﻿using SeiyuuMoe.Domain.Entities;
+using SeiyuuMoe.Domain.Entities;
 using System;
 using System.Linq;
 
 namespace SeiyuuMoe.MalBackgroundJobs.Application.Helpers
 {
-	internal static class JikanParserHelper
+	internal static class MalParserHelper
 	{
 		public static AnimeStatusId? GetUpdatedAnimeStatus(AnimeStatusId? currentStatus, string newStatus) =>
 			Enum.TryParse(newStatus?.Replace(" ", ""), out AnimeStatusId parsedAnimeStatus) ?
@@ -16,26 +16,12 @@ namespace SeiyuuMoe.MalBackgroundJobs.Application.Helpers
 				parsedAnimeType :
 				currentType;
 
-		public static (string, int)? GetSeasonPartsByName(string season)
-		{
-			var seasonParts = season.Split(' ');
-
-			if (seasonParts.Length < 2)
-				return null;
-
-			var isYearNumber = int.TryParse(seasonParts[1], out int year);
-			var seasonName = seasonParts[0];
-
-			if (!isYearNumber)
-				return null;
-
-			return (seasonName, year);
-		}
-
 		public static (string, int)? GetSeasonPartsByAiringDate(DateTime? airingDate)
 		{
 			if (!airingDate.HasValue)
+			{
 				return null;
+			}
 
 			var airingDay = airingDate.Value.DayOfYear;
 			var airingYear = airingDate.Value.Year;
@@ -56,7 +42,7 @@ namespace SeiyuuMoe.MalBackgroundJobs.Application.Helpers
 			return (seasonName, airingYear);
 		}
 
-		public static bool IsJapanese(string japaneseName) => 
+		public static bool IsJapanese(string japaneseName) =>
 			!string.IsNullOrWhiteSpace(japaneseName) && japaneseName.All(x =>
 					   x >= 0x4E00 && x <= 0x9FBF || // kanji
 					   x >= 0x3040 && x <= 0x309F || // hiragana

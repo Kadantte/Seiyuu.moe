@@ -52,8 +52,8 @@ namespace SeiyuuMoe.MalBackgroundJobs.Application.Handlers
 			animeToUpdate.ImageUrl = malAnimeUpdateData.ImageUrl;
 			animeToUpdate.AiringDate = malAnimeUpdateData.AiringDate ?? animeToUpdate.AiringDate;
 			animeToUpdate.TitleSynonyms = !string.IsNullOrWhiteSpace(malAnimeUpdateData.TitleSynonyms) ? malAnimeUpdateData.TitleSynonyms : animeToUpdate.TitleSynonyms;
-			animeToUpdate.StatusId = JikanParserHelper.GetUpdatedAnimeStatus(animeToUpdate.StatusId, malAnimeUpdateData.Status);
-			animeToUpdate.TypeId = JikanParserHelper.GetUpdatedAnimeType(animeToUpdate.TypeId, malAnimeUpdateData.Type);
+			animeToUpdate.StatusId = MalParserHelper.GetUpdatedAnimeStatus(animeToUpdate.StatusId, malAnimeUpdateData.Status);
+			animeToUpdate.TypeId = MalParserHelper.GetUpdatedAnimeType(animeToUpdate.TypeId, malAnimeUpdateData.Type);
 			animeToUpdate.SeasonId = string.IsNullOrEmpty(malAnimeUpdateData.SeasonName)
 				? await MatchSeasonByDateAsync(malAnimeUpdateData.AiringDate)
 				: await MatchSeasonBySeasonAsync(malAnimeUpdateData.SeasonName, malAnimeUpdateData.SeasonYear);
@@ -72,7 +72,7 @@ namespace SeiyuuMoe.MalBackgroundJobs.Application.Handlers
 
 		private async Task<long?> MatchSeasonByDateAsync(DateTime? airingDate)
 		{
-			(string, int)? season = JikanParserHelper.GetSeasonPartsByAiringDate(airingDate);
+			(string, int)? season = MalParserHelper.GetSeasonPartsByAiringDate(airingDate);
 
 			if (season is null)
 			{

@@ -66,6 +66,10 @@ Require .Net 10.0 installed.
 
 ## Changelog
 
+### Version 2.4 - 30 August 2026
+
+* Migrated MAL data provider from JikanDotNet to [Tenrai.Net](https://www.nuget.org/packages/Tenrai.Net) 3.1.0 (Jikan successor, same schema).
+
 ### Version 2.3 - 23 August 2020
 
 * Fix season displaying in anime card
@@ -81,5 +85,5 @@ Most planned features can be found in [Projects](https://github.com/Ervie/Seiyuu
   
 ## Special mentions
 
-Project uses Jikan API, an unofficial MyAnimeList API, courtesy of Nekomata (Irfan Dahir). Project can be found under this [link](https://github.com/jikan-me/jikan/).
+Project uses [Tenrai](https://tenrai.org), an unofficial MyAnimeList REST API. API documentation can be found at [api.tenrai.org/documentation](https://api.tenrai.org/documentation). Data provided by [MyAnimeList](https://myanimelist.net).
 <div>Website icon made by <a href="https://www.flaticon.com/authors/icon-monk" title="Icon Monk">Icon Monk</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY.</a></div>

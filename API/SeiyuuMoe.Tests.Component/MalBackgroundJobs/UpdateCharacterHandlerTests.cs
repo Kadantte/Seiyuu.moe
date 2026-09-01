@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Execution;
-using JikanDotNet;
-using JikanDotNet.Exceptions;
+using Tenrai;
+using Tenrai.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using SeiyuuMoe.Domain.Services;
@@ -9,7 +9,7 @@ using SeiyuuMoe.Domain.SqsMessages;
 using SeiyuuMoe.Infrastructure.Database.Characters;
 using SeiyuuMoe.Infrastructure.Database.Context;
 using SeiyuuMoe.MalBackgroundJobs.Application.Handlers;
-using SeiyuuMoe.Tests.Common.Builders.Jikan;
+using SeiyuuMoe.Tests.Common.Builders.Tenrai;
 using SeiyuuMoe.Tests.Common.Builders.Model;
 using SeiyuuMoe.Tests.Common.Helpers;
 using System;
@@ -22,13 +22,13 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 	public class UpdateCharacterHandlerTests
 	{
 		[Fact]
-		public async Task HandleAsync_GivenEmptyDatabase_ShouldNotThrowAndNotCallJikan()
+		public async Task HandleAsync_GivenEmptyDatabase_ShouldNotThrowAndNotCallTenrai()
 		{
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder();
+			var tenraiServiceBuilder = new TenraiServiceBuilder();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateCharacterMessage
 			{
@@ -43,17 +43,17 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			using (new AssertionScope())
 			{
 				await action.Should().NotThrowAsync();
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(It.IsAny<long>()), Times.Never);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetCharacterAsync(It.IsAny<long>()), Times.Never);
 			}
 		}
 
 		[Fact]
-		public async Task HandleAsync_GivenNullResponseFromJikan_ShouldNotThrowAndCallJikan()
+		public async Task HandleAsync_GivenNullResponseFromTenrai_ShouldNotThrowAndCallTenrai()
 		{
 			// Given
 			const int malId = 1;
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder().WithCharacterReturned(null);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithCharacterReturned(null);
 
 			var character = new CharacterBuilder()
 				.WithMalId(malId)
@@ -62,7 +62,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(character);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateCharacterMessage
 			{
@@ -77,17 +77,17 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			using (new AssertionScope())
 			{
 				await action.Should().NotThrowAsync();
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetCharacterAsync(malId), Times.Once);
 			}
 		}
 
 		[Fact]
-		public async Task HandleAsync_GivenExceptionFromJikan_ShouldThrowAndCallJikan()
+		public async Task HandleAsync_GivenExceptionFromTenrai_ShouldThrowAndCallTenrai()
 		{
 			// Given
 			const int malId = 1;
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder().WithGetCharacterThrowing();
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithGetCharacterThrowing();
 
 			var anime = new CharacterBuilder()
 				.WithMalId(malId)
@@ -96,7 +96,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateCharacterMessage
 			{
@@ -110,8 +110,8 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			// Then
 			using (new AssertionScope())
 			{
-				await action.Should().ThrowExactlyAsync<JikanRequestException>();
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(malId), Times.Once);
+				await action.Should().ThrowExactlyAsync<TenraiRequestException>();
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetCharacterAsync(malId), Times.Once);
 			}
 		}
 
@@ -141,7 +141,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			};
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder().WithCharacterReturned(returnedCharacter);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithCharacterReturned(returnedCharacter);
 
 			var character = new CharacterBuilder()
 				.WithMalId(malId)
@@ -155,7 +155,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(character);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateCharacterMessage
 			{
@@ -176,7 +176,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				updatedCharacter.ImageUrl.Should().Be(returnedImageUrl);
 				updatedCharacter.Popularity.Should().Be(returnedPopularity);
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetCharacterAsync(malId), Times.Once);
 			}
 		}
 
@@ -197,7 +197,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			};
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder().WithCharacterReturned(returnedCharacter);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithCharacterReturned(returnedCharacter);
 
 			var character = new CharacterBuilder()
 				.WithMalId(malId)
@@ -211,7 +211,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(character);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateCharacterMessage
 			{
@@ -228,7 +228,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			{
 				updatedCharacter.ImageUrl.Should().BeEmpty();
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetCharacterAsync(malId), Times.Once);
 			}
 		}
 
@@ -245,7 +245,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Nicknames = nicknames
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithCharacterReturned(returnedCharacter);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithCharacterReturned(returnedCharacter);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var character = new CharacterBuilder()
@@ -260,7 +260,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(character);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateCharacterMessage
 			{
@@ -277,7 +277,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			{
 				updatedCharacter.Nicknames.Should().Be("Nickname 1;Nickname 2;Nickname 3");
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetCharacterAsync(malId), Times.Once);
 			}
 		}
 

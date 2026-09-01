@@ -1,25 +1,25 @@
-using JikanDotNet;
 using SeiyuuMoe.Domain.MalUpdateData;
 using SeiyuuMoe.Domain.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Tenrai;
 
-namespace SeiyuuMoe.Infrastructure.Jikan
+namespace SeiyuuMoe.Infrastructure.Tenrai
 {
-	public class JikanService : IMalApiService
+	public class TenraiService : IMalApiService
 	{
-		private readonly IJikan _jikanClient;
+		private readonly ITenrai _tenraiClient;
 
-		public JikanService(IJikan jikanClient)
+		public TenraiService(ITenrai tenraiClient)
 		{
-			_jikanClient = jikanClient;
+			_tenraiClient = tenraiClient;
 		}
 
 		public async Task<MalAnimeUpdateData> GetAnimeDataAsync(long malId)
 		{
-			var parsedData = await _jikanClient.GetAnimeAsync(malId);
+			var parsedData = await _tenraiClient.GetAnimeAsync(malId);
 
 			if (parsedData?.Data is null)
 			{
@@ -36,7 +36,7 @@ namespace SeiyuuMoe.Infrastructure.Jikan
 				GetSynonyms(animeTitles),
 				parsedData.Data.Members,
 				EmptyStringIfPlaceholder(parsedData.Data.Images?.JPG?.ImageUrl),
-				parsedData.Data.Aired?.From,
+				parsedData.Data.Aired?.From?.UtcDateTime,
 				parsedData.Data.Type,
 				parsedData.Data.Status,
 				parsedData.Data.Season.ToString(),
@@ -46,7 +46,7 @@ namespace SeiyuuMoe.Infrastructure.Jikan
 
 		public async Task<MalCharacterUpdateData> GetCharacterDataAsync(long malId)
 		{
-			var parsedData = await _jikanClient.GetCharacterAsync(malId);
+			var parsedData = await _tenraiClient.GetCharacterAsync(malId);
 
 			if (parsedData?.Data is null)
 			{
@@ -65,7 +65,7 @@ namespace SeiyuuMoe.Infrastructure.Jikan
 
 		public async Task<MalSeasonUpdateData> GetSeasonDataAsync()
 		{
-			var parsedData = await _jikanClient.GetSeasonArchiveAsync();
+			var parsedData = await _tenraiClient.GetSeasonArchiveAsync();
 
 			if (parsedData?.Data is null)
 			{
@@ -79,7 +79,7 @@ namespace SeiyuuMoe.Infrastructure.Jikan
 
 		public async Task<MalSeiyuuFullUpdateData> GetSeiyuuFullDataAsync(long malId)
 		{
-			var parsedData = await _jikanClient.GetPersonFullDataAsync(malId);
+			var parsedData = await _tenraiClient.GetPersonFullDataAsync(malId);
 
 			if (parsedData?.Data is null)
 			{

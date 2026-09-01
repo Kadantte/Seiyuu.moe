@@ -1,28 +1,24 @@
-using JikanDotNet;
 using SeiyuuMoe.Domain.SqsMessages;
 using SeiyuuMoe.Infrastructure.Configuration;
 using SeiyuuMoe.Infrastructure.Database.Animes;
 using SeiyuuMoe.Infrastructure.Database.Context;
 using SeiyuuMoe.Infrastructure.Database.Seasons;
-using SeiyuuMoe.Infrastructure.Jikan;
+using SeiyuuMoe.Infrastructure.Tenrai;
 using SeiyuuMoe.MalBackgroundJobs.Application.Handlers;
 using SeiyuuMoe.MalBackgroundJobs.Lambda.Base;
 using System;
 using System.Threading.Tasks;
-using JikanDotNet.Config;
 
 namespace SeiyuuMoe.MalBackgroundJobs.Lambda.Function
 {
 	public class UpdateAnimeLambda : BaseSqsLambda<UpdateAnimeMessage>
 	{
-		private static readonly IJikan JikanClient;
-		private static readonly JikanService JikanService;
+		private static readonly TenraiService TenraiService;
 
 		static UpdateAnimeLambda()
 		{
-			var jikanConfiguration = new JikanClientConfiguration { SuppressException = true };
-			JikanClient = new Jikan(jikanConfiguration);
-			JikanService = new JikanService(JikanClient);
+			var serverKey = ConfigurationReader.TenraiServerKey;
+			TenraiService = new TenraiService(TenraiClientFactory.Create(serverKey));
 		}
 
 		protected async override Task HandleAsync(UpdateAnimeMessage message)
@@ -40,8 +36,8 @@ namespace SeiyuuMoe.MalBackgroundJobs.Lambda.Function
 		{
 			var animeRepository = new AnimeRepository(dbContext);
 			var seasonRepository = new SeasonRepository(dbContext);
-			
-			return new UpdateAnimeHandler(animeRepository, seasonRepository, JikanService);
+
+			return new UpdateAnimeHandler(animeRepository, seasonRepository, TenraiService);
 		}
 	}
 }

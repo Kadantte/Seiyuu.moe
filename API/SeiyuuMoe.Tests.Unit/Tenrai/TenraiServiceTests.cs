@@ -1,28 +1,27 @@
 using FluentAssertions;
 using FluentAssertions.Execution;
-using JikanDotNet;
 using Moq;
-using SeiyuuMoe.Infrastructure.Jikan;
-using SeiyuuMoe.Tests.Common.Builders.Jikan;
+using SeiyuuMoe.Tests.Common.Builders.Tenrai;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Tenrai;
 using Xunit;
 
-namespace SeiyuuMoe.Tests.Unit.Jikan
+namespace SeiyuuMoe.Tests.Unit.Tenrai
 {
-	public class JikanServiceTests
+	public class TenraiServiceTests
 	{
 		[Fact]
 		public async Task GetSeiyuuFullDataAsync_GivenNullResponse_ShouldReturnNull()
 		{
 			// Given
-			var jikanService = new JikanServiceBuilder()
+			var tenraiService = new TenraiServiceBuilder()
 				.WithPersonReturned(null, null)
 				.Build();
 
 			// When
-			var result = await jikanService.GetSeiyuuFullDataAsync(1);
+			var result = await tenraiService.GetSeiyuuFullDataAsync(1);
 
 			// Then
 			result.Should().BeNull();
@@ -54,12 +53,12 @@ namespace SeiyuuMoe.Tests.Unit.Jikan
 				Birthday = birthday
 			};
 
-			var jikanService = new JikanServiceBuilder()
+			var tenraiService = new TenraiServiceBuilder()
 				.WithPersonReturned(person, null)
 				.Build();
 
 			// When
-			var result = await jikanService.GetSeiyuuFullDataAsync(1);
+			var result = await tenraiService.GetSeiyuuFullDataAsync(1);
 
 			// Then
 			using (new AssertionScope())
@@ -99,12 +98,12 @@ namespace SeiyuuMoe.Tests.Unit.Jikan
 				}
 			};
 
-			var jikanService = new JikanServiceBuilder()
+			var tenraiService = new TenraiServiceBuilder()
 				.WithPersonReturned(person, voiceActingRoles)
 				.Build();
 
 			// When
-			var result = await jikanService.GetSeiyuuFullDataAsync(1);
+			var result = await tenraiService.GetSeiyuuFullDataAsync(1);
 
 			// Then
 			using (new AssertionScope())
@@ -123,16 +122,16 @@ namespace SeiyuuMoe.Tests.Unit.Jikan
 		{
 			// Given
 			const long malId = 42;
-			var jikanServiceBuilder = new JikanServiceBuilder().WithPersonReturned(new Person { Name = "Test" }, null);
-			var jikanService = jikanServiceBuilder.Build();
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithPersonReturned(new Person { Name = "Test" }, null);
+			var tenraiService = tenraiServiceBuilder.Build();
 
 			// When
-			await jikanService.GetSeiyuuFullDataAsync(malId);
+			await tenraiService.GetSeiyuuFullDataAsync(malId);
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(malId), Times.Once);
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonAsync(It.IsAny<long>()), Times.Never);
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonVoiceActingRolesAsync(It.IsAny<long>()), Times.Never);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(malId), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonAsync(It.IsAny<long>()), Times.Never);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonVoiceActingRolesAsync(It.IsAny<long>()), Times.Never);
 		}
 	}
 }

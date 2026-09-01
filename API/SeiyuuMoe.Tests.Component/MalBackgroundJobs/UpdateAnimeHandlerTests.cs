@@ -1,7 +1,7 @@
 using FluentAssertions;
 using FluentAssertions.Execution;
-using JikanDotNet;
-using JikanDotNet.Exceptions;
+using Tenrai;
+using Tenrai.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using SeiyuuMoe.Domain.Services;
@@ -10,7 +10,7 @@ using SeiyuuMoe.Infrastructure.Database.Animes;
 using SeiyuuMoe.Infrastructure.Database.Context;
 using SeiyuuMoe.Infrastructure.Database.Seasons;
 using SeiyuuMoe.MalBackgroundJobs.Application.Handlers;
-using SeiyuuMoe.Tests.Common.Builders.Jikan;
+using SeiyuuMoe.Tests.Common.Builders.Tenrai;
 using SeiyuuMoe.Tests.Common.Builders.Model;
 using SeiyuuMoe.Tests.Common.Helpers;
 using System;
@@ -23,13 +23,13 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 	public class UpdateAnimeHandlerTests
 	{
 		[Fact]
-		public async Task HandleAsync_GivenEmptyDatabase_ShouldNotThrowAndNotCallJikan()
+		public async Task HandleAsync_GivenEmptyDatabase_ShouldNotThrowAndNotCallTenrai()
 		{
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder();
+			var tenraiServiceBuilder = new TenraiServiceBuilder();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -44,17 +44,17 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			using (new AssertionScope())
 			{
 				await action.Should().NotThrowAsync();
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(It.IsAny<long>()), Times.Never);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(It.IsAny<long>()), Times.Never);
 			}
 		}
 
 		[Fact]
-		public async Task HandleAsync_GivenNullResponseFromJikan_ShouldNotThrowAndCallJikan()
+		public async Task HandleAsync_GivenNullResponseFromTenrai_ShouldNotThrowAndCallTenrai()
 		{
 			// Given
 			const int malId = 1;
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(null);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(null);
 
 			var anime = new AnimeBuilder()
 				.WithMalId(malId)
@@ -63,7 +63,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -78,17 +78,17 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			using (new AssertionScope())
 			{
 				await action.Should().NotThrowAsync();
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
 		[Fact]
-		public async Task HandleAsync_GivenExceptionFromJikan_ShouldThrowAndCallJikan()
+		public async Task HandleAsync_GivenExceptionFromTenrai_ShouldThrowAndCallTenrai()
 		{
 			// Given
 			const int malId = 1;
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder().WithGetAnimeThrowing();
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithGetAnimeThrowing();
 
 			var anime = new AnimeBuilder()
 				.WithMalId(malId)
@@ -97,7 +97,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -111,8 +111,8 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			// Then
 			using (new AssertionScope())
 			{
-				await action.Should().ThrowExactlyAsync<JikanRequestException>();
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				await action.Should().ThrowExactlyAsync<TenraiRequestException>();
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
@@ -140,7 +140,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Members = returnedPopularity
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(returnedAnime);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(returnedAnime);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var anime = new AnimeBuilder()
@@ -156,7 +156,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -178,7 +178,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				updatedAnime.ImageUrl.Should().Be(returnedImageUrl);
 				updatedAnime.Popularity.Should().Be(returnedPopularity);
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
@@ -201,7 +201,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				}
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(returnedAnime);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(returnedAnime);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var anime = new AnimeBuilder()
@@ -217,7 +217,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -234,7 +234,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			{
 				updatedAnime.ImageUrl.Should().BeEmpty();
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
@@ -251,7 +251,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Titles = AnimeTitlesBuilder.Build(titleSynonyms: returnedSynonyms)
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(returnedAnime);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(returnedAnime);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var anime = new AnimeBuilder()
@@ -267,7 +267,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -284,7 +284,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			{
 				updatedAnime.TitleSynonyms.Should().Be("Synonym 1;Synonym 2;Synonym 3");
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
@@ -300,7 +300,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Status = "test status"
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(returnedAnime);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(returnedAnime);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var anime = new AnimeBuilder()
@@ -318,7 +318,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -336,7 +336,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				updatedAnime.TypeId.Should().Be(Domain.Entities.AnimeTypeId.TV);
 				updatedAnime.StatusId.Should().Be(Domain.Entities.AnimeStatusId.CurrentlyAiring);
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
@@ -352,7 +352,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Status = "Not yet aired"
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(returnedAnime);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(returnedAnime);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var anime = new AnimeBuilder()
@@ -370,7 +370,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -388,7 +388,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				updatedAnime.TypeId.Should().Be(Domain.Entities.AnimeTypeId.Movie);
 				updatedAnime.StatusId.Should().Be(Domain.Entities.AnimeStatusId.Notyetaired);
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
@@ -404,7 +404,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Year = 2001
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(returnedAnime);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(returnedAnime);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var anime = new AnimeBuilder()
@@ -429,7 +429,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(season);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -446,7 +446,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			{
 				updatedAnime.SeasonId.Should().BeNull();
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
@@ -462,7 +462,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Year = 2000
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(returnedAnime);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(returnedAnime);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var anime = new AnimeBuilder()
@@ -487,7 +487,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(season);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -504,7 +504,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			{
 				updatedAnime.SeasonId.Should().Be(10);
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
@@ -524,7 +524,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				}
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(returnedAnime);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(returnedAnime);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var anime = new AnimeBuilder()
@@ -550,7 +550,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddRangeAsync(seasons);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -567,7 +567,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			{
 				updatedAnime.SeasonId.Should().Be(10);
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
@@ -586,7 +586,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				}
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(returnedAnime);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(returnedAnime);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var anime = new AnimeBuilder()
@@ -612,7 +612,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddRangeAsync(seasons);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -629,7 +629,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			{
 				updatedAnime.SeasonId.Should().Be(12);
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 
@@ -668,7 +668,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				}
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithAnimeReturned(returnedAnime);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithAnimeReturned(returnedAnime);
 
 			var dbContext = InMemoryDbProvider.GetDbContext();
 			var anime = new AnimeBuilder()
@@ -696,7 +696,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddRangeAsync(seasons);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build());
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build());
 
 			var command = new UpdateAnimeMessage
 			{
@@ -713,7 +713,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			{
 				updatedAnime.SeasonId.Should().Be(expectedSeasonId);
 
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(malId), Times.Once);
 			}
 		}
 

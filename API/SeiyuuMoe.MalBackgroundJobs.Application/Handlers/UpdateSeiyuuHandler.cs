@@ -160,8 +160,8 @@ namespace SeiyuuMoe.MalBackgroundJobs.Application.Handlers
 				KanjiTitle = parsedData.JapaneseTitle,
 				Popularity = parsedData.Popularity,
 				TitleSynonyms = !string.IsNullOrWhiteSpace(parsedData.TitleSynonyms) ? parsedData.TitleSynonyms : string.Empty,
-				StatusId = JikanParserHelper.GetUpdatedAnimeStatus(null, parsedData.Status),
-				TypeId = JikanParserHelper.GetUpdatedAnimeType(null, parsedData.Type),
+				StatusId = MalParserHelper.GetUpdatedAnimeStatus(null, parsedData.Status),
+				TypeId = MalParserHelper.GetUpdatedAnimeType(null, parsedData.Type),
 				SeasonId = string.IsNullOrEmpty(parsedData.SeasonName)
 				? await MatchSeasonByDateAsync(parsedData.AiringDate)
 				: await MatchSeasonBySeasonAsync(parsedData.SeasonName, parsedData.SeasonYear)
@@ -185,7 +185,7 @@ namespace SeiyuuMoe.MalBackgroundJobs.Application.Handlers
 
 		private async Task<long?> MatchSeasonByDateAsync(DateTime? airingDate)
 		{
-			(string, int)? season = JikanParserHelper.GetSeasonPartsByAiringDate(airingDate);
+			(string, int)? season = MalParserHelper.GetSeasonPartsByAiringDate(airingDate);
 
 			if (season is null)
 			{

@@ -46,8 +46,8 @@ export default {
               {
                 iconPrefix: '',
                 icon: '',
-                text: 'Jikan API',
-                link: 'https://jikan.moe/'
+                text: 'Tenrai API',
+                link: 'https://tenrai.org/'
               },
               {
                 iconPrefix: '',

@@ -1,7 +1,7 @@
-using JikanDotNet;
 using System.Collections.Generic;
+using Tenrai;
 
-namespace SeiyuuMoe.Tests.Common.Builders.Jikan
+namespace SeiyuuMoe.Tests.Common.Builders.Tenrai
 {
 	public static class AnimeTitlesBuilder
 	{

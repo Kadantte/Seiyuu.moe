@@ -1,7 +1,7 @@
 using FluentAssertions;
 using FluentAssertions.Execution;
-using JikanDotNet;
-using JikanDotNet.Exceptions;
+using Tenrai;
+using Tenrai.Exceptions;
 using Moq;
 using SeiyuuMoe.Domain.S3;
 using SeiyuuMoe.Infrastructure.Database.Animes;
@@ -9,9 +9,9 @@ using SeiyuuMoe.Infrastructure.Database.Characters;
 using SeiyuuMoe.Infrastructure.Database.Context;
 using SeiyuuMoe.Infrastructure.Database.Seasons;
 using SeiyuuMoe.Infrastructure.Database.Seiyuus;
-using SeiyuuMoe.Infrastructure.Jikan;
+using SeiyuuMoe.Infrastructure.Tenrai;
 using SeiyuuMoe.MalBackgroundJobs.Application.Handlers;
-using SeiyuuMoe.Tests.Common.Builders.Jikan;
+using SeiyuuMoe.Tests.Common.Builders.Tenrai;
 using SeiyuuMoe.Tests.Common.Builders.Model;
 using SeiyuuMoe.Tests.Common.Helpers;
 using SeiyuuMoe.Tests.Common.Stubs;
@@ -25,46 +25,46 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 	public class InsertSeiyuuHandlerTests
 	{
 		[Fact]
-		public async Task HandleAsync_GivenEmptyDatabaseAndBatchSizeOne_ShouldCallJikanOnceWithNextId()
+		public async Task HandleAsync_GivenEmptyDatabaseAndBatchSizeOne_ShouldCallTenraiOnceWithNextId()
 		{
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder();
+			var tenraiServiceBuilder = new TenraiServiceBuilder();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), new S3ServiceStub(1), 1);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), new S3ServiceStub(1), 1);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(2), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(2), Times.Once);
 		}
 
 		[Fact]
-		public async Task HandleAsync_GivenEmptyDatabaseAndBatchSizeOneAndBiggerId_ShouldCallJikanOnceWithNextId()
+		public async Task HandleAsync_GivenEmptyDatabaseAndBatchSizeOneAndBiggerId_ShouldCallTenraiOnceWithNextId()
 		{
 			// Given
 			var lastId = 10000;
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder();
+			var tenraiServiceBuilder = new TenraiServiceBuilder();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), new S3ServiceStub(lastId), 1);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), new S3ServiceStub(lastId), 1);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(lastId + 1), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(lastId + 1), Times.Once);
 		}
 
 		[Fact]
-		public async Task HandleAsync_GivenEmptyDatabaseAndBatchSizeFive_ShouldCallJikanFiveTimesWithNextIds()
+		public async Task HandleAsync_GivenEmptyDatabaseAndBatchSizeFive_ShouldCallTenraiFiveTimesWithNextIds()
 		{
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder();
+			var tenraiServiceBuilder = new TenraiServiceBuilder();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), new S3ServiceStub(1), 5);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), new S3ServiceStub(1), 5);
 
 			// When
 			await handler.HandleAsync();
@@ -72,11 +72,11 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			// Then
 			using (new AssertionScope())
 			{
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(2), Times.Once);
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(3), Times.Once);
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(4), Times.Once);
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(5), Times.Once);
-				jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(6), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(2), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(3), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(4), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(5), Times.Once);
+				tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(6), Times.Once);
 			}
 		}
 
@@ -85,10 +85,10 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 		{
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder();
+			var tenraiServiceBuilder = new TenraiServiceBuilder();
 			var s3Service = new S3ServiceStub(1);
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 1);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 1);
 
 			// When
 			await handler.HandleAsync();
@@ -103,10 +103,10 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 		{
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder();
+			var tenraiServiceBuilder = new TenraiServiceBuilder();
 			var s3Service = new S3ServiceStub(1);
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 5);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 5);
 
 			// When
 			await handler.HandleAsync();
@@ -117,11 +117,11 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 		}
 
 		[Fact]
-		public async Task HandleAsync_GivenExistingSeiyuu_ShouldSkipAndNotCallJikan()
+		public async Task HandleAsync_GivenExistingSeiyuu_ShouldSkipAndNotCallTenrai()
 		{
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder();
+			var tenraiServiceBuilder = new TenraiServiceBuilder();
 			const int startingMalId = 1;
 			var s3Service = new S3ServiceStub(startingMalId);
 
@@ -132,22 +132,22 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 5);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 5);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(It.IsAny<int>()), Times.Never);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(It.IsAny<int>()), Times.Never);
 			dbContext.Seiyuus.Should().ContainSingle();
 		}
 
 		[Fact]
-		public async Task HandleAsync_GivenNotExistingSeiyuuExceptionFromJikan_ShouldSkipAndNotInsert()
+		public async Task HandleAsync_GivenNotExistingSeiyuuExceptionFromTenrai_ShouldSkipAndNotInsert()
 		{
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder().WithGetPersonThrowing();
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithGetPersonThrowing();
 			const int startingMalId = 1;
 			var s3Service = new S3ServiceStub(startingMalId);
 
@@ -158,7 +158,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 1);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 1);
 
 			// When
 			var action = handler.Awaiting(x => x.HandleAsync());
@@ -166,18 +166,18 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			// Then
 			using (new AssertionScope())
 			{
-				await action.Should().ThrowExactlyAsync<JikanRequestException>();
+				await action.Should().ThrowExactlyAsync<TenraiRequestException>();
 				dbContext.Seiyuus.Should().ContainSingle();
 			}
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
 		}
 
 		[Fact]
-		public async Task HandleAsync_GivenNotExistingSeiyuuNullFromJikan_ShouldSkipAndNotInsert()
+		public async Task HandleAsync_GivenNotExistingSeiyuuNullFromTenrai_ShouldSkipAndNotInsert()
 		{
 			// Given
 			var dbContext = InMemoryDbProvider.GetDbContext();
-			var jikanServiceBuilder = new JikanServiceBuilder().WithPersonReturned(null, null);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithPersonReturned(null, null);
 			const int startingMalId = 1;
 			var s3Service = new S3ServiceStub(startingMalId);
 
@@ -188,13 +188,13 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 1);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 1);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
 			dbContext.Seiyuus.Should().ContainSingle();
 		}
 
@@ -228,7 +228,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Birthday = returnedBirthdate
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithPersonReturned(returnedSeiyuu, null);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithPersonReturned(returnedSeiyuu, null);
 
 			var anime = new SeiyuuBuilder()
 				.WithMalId(startingMalId)
@@ -237,13 +237,13 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 1);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 1);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
 			dbContext.Seiyuus.Should().ContainSingle();
 		}
 
@@ -277,7 +277,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Birthday = returnedBirthdate
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithPersonReturned(returnedSeiyuu, null);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithPersonReturned(returnedSeiyuu, null);
 
 			var anime = new SeiyuuBuilder()
 				.WithMalId(startingMalId)
@@ -286,13 +286,13 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 5);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 5);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(startingMalId + 1), Times.Once);
 			dbContext.Seiyuus.Should().ContainSingle();
 		}
 
@@ -343,7 +343,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				}
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder().WithPersonReturned(returnedSeiyuu, returnedRoles);
+			var tenraiServiceBuilder = new TenraiServiceBuilder().WithPersonReturned(returnedSeiyuu, returnedRoles);
 
 			var anime = new SeiyuuBuilder()
 				.WithMalId(startingSeiyuuMalId)
@@ -352,13 +352,13 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 5);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 5);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
 			dbContext.Seiyuus.Should().ContainSingle();
 		}
 
@@ -409,7 +409,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				}
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder()
+			var tenraiServiceBuilder = new TenraiServiceBuilder()
 				.WithPersonReturned(returnedSeiyuu, returnedRoles)
 				.WithCharacterReturned(null)
 				.WithAnimeReturned(null);
@@ -421,15 +421,15 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 1);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 1);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
 			dbContext.Seiyuus.Should().HaveCount(2);
 			dbContext.AnimeRoles.Should().BeEmpty();
 		}
@@ -500,7 +500,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Members = returnedAnimePopularity
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder()
+			var tenraiServiceBuilder = new TenraiServiceBuilder()
 				.WithPersonReturned(returnedSeiyuu, returnedRoles)
 				.WithCharacterReturned(null)
 				.WithAnimeReturned(returnedAnime);
@@ -512,15 +512,15 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 1);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 1);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
 			dbContext.Seiyuus.Should().HaveCount(2);
 			dbContext.Animes.Should().ContainSingle();
 			dbContext.AnimeCharacters.Should().BeEmpty();
@@ -594,7 +594,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Favorites = returnedCharacterPopularity
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder()
+			var tenraiServiceBuilder = new TenraiServiceBuilder()
 				.WithPersonReturned(returnedSeiyuu, returnedRoles)
 				.WithCharacterReturned(returnedCharacter)
 				.WithAnimeReturned(null);
@@ -606,15 +606,15 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 1);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 1);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
 			dbContext.Seiyuus.Should().HaveCount(2);
 			dbContext.Animes.Should().BeEmpty();
 			dbContext.AnimeCharacters.Should().ContainSingle();
@@ -707,7 +707,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				Members = returnedAnimePopularity
 			};
 
-			var jikanServiceBuilder = new JikanServiceBuilder()
+			var tenraiServiceBuilder = new TenraiServiceBuilder()
 				.WithPersonReturned(returnedSeiyuu, returnedRoles)
 				.WithCharacterReturned(returnedCharacter)
 				.WithAnimeReturned(returnedAnime);
@@ -719,15 +719,15 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			await dbContext.AddAsync(anime);
 			await dbContext.SaveChangesAsync();
 
-			var handler = CreateHandler(dbContext, jikanServiceBuilder.Build(), s3Service, 1);
+			var handler = CreateHandler(dbContext, tenraiServiceBuilder.Build(), s3Service, 1);
 
 			// When
 			await handler.HandleAsync();
 
 			// Then
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
-			jikanServiceBuilder.JikanClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetPersonFullDataAsync(startingSeiyuuMalId + 1), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetAnimeAsync(animeMalId), Times.Once);
+			tenraiServiceBuilder.TenraiClient.Verify(x => x.GetCharacterAsync(characterMalId), Times.Once);
 			using (new AssertionScope())
 			{
 				dbContext.Seiyuus.Should().HaveCount(2);
@@ -737,7 +737,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 			}
 		}
 
-		private InsertSeiyuuHandler CreateHandler(SeiyuuMoeContext dbContext, JikanService jikanService, IS3Service s3Service, int insertSeiyuuBatchSize)
+		private InsertSeiyuuHandler CreateHandler(SeiyuuMoeContext dbContext, TenraiService tenraiService, IS3Service s3Service, int insertSeiyuuBatchSize)
 		{
 			var animeRepository = new AnimeRepository(dbContext);
 			var seiyuuRepository = new SeiyuuRepository(dbContext);
@@ -753,7 +753,7 @@ namespace SeiyuuMoe.Tests.Component.MalBackgroundJobs
 				characterRepository,
 				animeRepository,
 				animeRoleRepository,
-				jikanService,
+				tenraiService,
 				s3Service
 			);
 		}

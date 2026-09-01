@@ -50,7 +50,7 @@ public class TenraiClientTests
 
         // Then
         using var _ = new AssertionScope();
-        result.Data.Name.Should().Be("Spike Spiegel");
+        result.Data.Name.Should().Be("Spiegel, Spike");
         result.Data.About.Should().StartWith("Birthdate: June 26, 2044");
         result.Data.NameKanji.Should().Be("スパイク・スピーゲル");
         result.Data.Images.JPG.ImageUrl.Should().NotBeNullOrWhiteSpace();
@@ -79,7 +79,7 @@ public class TenraiClientTests
 
         // Then
         using var _ = new AssertionScope();
-        result.Data.Name.Should().Be("Tomokazu Seki");
+        result.Data.Name.Should().Be("Seki, Tomokazu");
         result.Data.About.Should().StartWith("Hometown: Tokyo, Japan");
         result.Data.GivenName.Should().Be("智一");
         result.Data.FamilyName.Should().Be("関");
