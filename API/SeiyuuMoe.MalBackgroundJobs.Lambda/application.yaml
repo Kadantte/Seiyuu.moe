@@ -76,11 +76,11 @@ Resources:
                 Action:
                   - sqs:SendMessage
                   - sqs:SendMessageBatch
-                Resource: 
+                Resource:
                   - !GetAtt AnimeToUpdateQueue.Arn
                   - !GetAtt CharactersToUpdateQueue.Arn
                   - !GetAtt SeiyuuToUpdateQueue.Arn
-  
+
   UpdateLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -109,7 +109,7 @@ Resources:
                   - sqs:ReceiveMessage
                   - sqs:ChangeMessageVisibility
                   - sqs:GetQueueAttributes
-                Resource: 
+                Resource:
                   - !GetAtt AnimeToUpdateQueue.Arn
                   - !GetAtt CharactersToUpdateQueue.Arn
                   - !GetAtt SeiyuuToUpdateQueue.Arn
@@ -126,7 +126,7 @@ Resources:
                 Action: s3:ListBucket
                 Resource: !GetAtt JobsStateBucket.Arn
               - Effect: Allow
-                Action: 
+                Action:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource:
@@ -143,34 +143,39 @@ Resources:
             Action: ssm:GetParametersByPath
             Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
           - Effect: Allow
-            Action: 
+            Action:
               - kms:Decrypt
               - kms:GenerateDataKey
             Resource:
               Fn::ImportValue: !FindInMap [Exports, KmsKeyArn, !Ref EnvironmentType ]
 
-  ScheduleAnimesUpdateRule:
-    Type: AWS::Events::Rule
+  SchedulerInvokeRole:
+    Type: AWS::IAM::Role
     Properties:
-      ScheduleExpression: cron(0 8 * * ? *)
-      Name: !Sub schedule-animes-update-rule-${EnvironmentType}
-      State: !If
-        - IsProdEnvironment
-        - ENABLED
-        - DISABLED
-      Targets:
-        - Arn: !GetAtt ScheduleAnimesUpdate.Arn
-          Id: LambdaTarget
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: scheduler.amazonaws.com
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+      Policies:
+        - PolicyName: AllowSchedulerToInvokeLambdas
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource:
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:schedule-animes-update-${EnvironmentType}
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:schedule-seiyuu-update-${EnvironmentType}
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:schedule-characters-update-${EnvironmentType}
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:update-seasons-${EnvironmentType}
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:insert-seiyuu-${EnvironmentType}
 
-  ScheduleAnimesUpdatePermission: 
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: !Ref ScheduleAnimesUpdate
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: 
-        !GetAtt ScheduleAnimesUpdateRule.Arn
-  
   ScheduleAnimesUpdate:
     Type: AWS::Serverless::Function
     Properties:
@@ -180,6 +185,19 @@ Resources:
       MemorySize: 512
       Timeout: 900
       Role: !GetAtt ScheduleLambdaRole.Arn
+      Events:
+        DailySchedule:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub schedule-animes-update-rule-${EnvironmentType}
+            ScheduleExpression: cron(0 8 * * ? *)
+            FlexibleTimeWindow:
+              Mode: "OFF"
+            State: !If
+              - IsProdEnvironment
+              - ENABLED
+              - DISABLED
+            RoleArn: !GetAtt SchedulerInvokeRole.Arn
 
   AnimeToUpdateQueue:
     Type: AWS::SQS::Queue
@@ -187,7 +205,7 @@ Resources:
       QueueName: !Sub anime-to-update-queue-${EnvironmentType}
       DelaySeconds: 0
       ReceiveMessageWaitTimeSeconds: 20
-      RedrivePolicy: 
+      RedrivePolicy:
         deadLetterTargetArn: !GetAtt AnimeToUpdateDLQ.Arn
         maxReceiveCount: 3
       VisibilityTimeout: 30
@@ -195,7 +213,7 @@ Resources:
   AnimeToUpdateDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub  dlq-${EnvironmentType}
+      QueueName: !Sub dlq-${EnvironmentType}
       MessageRetentionPeriod: 1209600
       ReceiveMessageWaitTimeSeconds: 0
 
@@ -216,50 +234,6 @@ Resources:
             BatchSize: 1
             Queue: !GetAtt AnimeToUpdateQueue.Arn
 
-  ScheduleSeiyuuUpdateRule:
-    Type: AWS::Events::Rule
-    Properties:
-      ScheduleExpression: cron(0 12 ? * SUN *)
-      Name: !Sub schedule-seiyuu-update-rule-${EnvironmentType}
-      State: !If
-        - IsProdEnvironment
-        - ENABLED
-        - DISABLED
-      Targets:
-        - Arn: !GetAtt ScheduleSeiyuuUpdate.Arn
-          Id: LambdaTarget
-
-  ScheduleSeiyuuUpdatePermission: 
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: !Ref ScheduleSeiyuuUpdate
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: 
-        !GetAtt ScheduleSeiyuuUpdateRule.Arn
-
-  ScheduleSeiyuuMidweekRule:
-    Type: AWS::Events::Rule
-    Properties:
-      ScheduleExpression: cron(0 12 ? * WED *)
-      Name: !Sub schedule-seiyuu-midweek-rule-${EnvironmentType}
-      State: !If
-        - IsProdEnvironment
-        - ENABLED
-        - DISABLED
-      Targets:
-        - Arn: !GetAtt ScheduleSeiyuuUpdate.Arn
-          Id: LambdaTargetMidweek
-
-  ScheduleSeiyuuMidweekPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref ScheduleSeiyuuUpdate
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn:
-        !GetAtt ScheduleSeiyuuMidweekRule.Arn
-
   ScheduleSeiyuuUpdate:
     Type: AWS::Serverless::Function
     Properties:
@@ -269,6 +243,31 @@ Resources:
       MemorySize: 512
       Timeout: 900
       Role: !GetAtt ScheduleLambdaRole.Arn
+      Events:
+        WeeklySchedule:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub schedule-seiyuu-update-rule-${EnvironmentType}
+            ScheduleExpression: cron(0 12 ? * SUN *)
+            FlexibleTimeWindow:
+              Mode: "OFF"
+            State: !If
+              - IsProdEnvironment
+              - ENABLED
+              - DISABLED
+            RoleArn: !GetAtt SchedulerInvokeRole.Arn
+        MidweekSchedule:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub schedule-seiyuu-midweek-rule-${EnvironmentType}
+            ScheduleExpression: cron(0 12 ? * WED *)
+            FlexibleTimeWindow:
+              Mode: "OFF"
+            State: !If
+              - IsProdEnvironment
+              - ENABLED
+              - DISABLED
+            RoleArn: !GetAtt SchedulerInvokeRole.Arn
 
   SeiyuuToUpdateQueue:
     Type: AWS::SQS::Queue
@@ -276,7 +275,7 @@ Resources:
       QueueName: !Sub seiyuu-to-update-queue-${EnvironmentType}
       DelaySeconds: 0
       ReceiveMessageWaitTimeSeconds: 20
-      RedrivePolicy: 
+      RedrivePolicy:
         deadLetterTargetArn: !GetAtt SeiyuuToUpdateDLQ.Arn
         maxReceiveCount: 3
       VisibilityTimeout: 1800
@@ -305,28 +304,6 @@ Resources:
             BatchSize: 1
             Queue: !GetAtt SeiyuuToUpdateQueue.Arn
 
-  ScheduleCharactersUpdateRule:
-    Type: AWS::Events::Rule
-    Properties:
-      ScheduleExpression: cron(0 14 * * ? *)
-      Name: !Sub schedule-characters-update-rule-${EnvironmentType}
-      State: !If
-        - IsProdEnvironment
-        - ENABLED
-        - DISABLED
-      Targets:
-        - Arn: !GetAtt ScheduleCharactersUpdate.Arn
-          Id: LambdaTarget
-  
-  ScheduleCharactersUpdatePermission: 
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: !Ref ScheduleCharactersUpdate
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: 
-        !GetAtt ScheduleCharactersUpdateRule.Arn
-
   ScheduleCharactersUpdate:
     Type: AWS::Serverless::Function
     Properties:
@@ -336,6 +313,19 @@ Resources:
       MemorySize: 512
       Timeout: 900
       Role: !GetAtt ScheduleLambdaRole.Arn
+      Events:
+        DailySchedule:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub schedule-characters-update-rule-${EnvironmentType}
+            ScheduleExpression: cron(0 14 * * ? *)
+            FlexibleTimeWindow:
+              Mode: "OFF"
+            State: !If
+              - IsProdEnvironment
+              - ENABLED
+              - DISABLED
+            RoleArn: !GetAtt SchedulerInvokeRole.Arn
 
   CharactersToUpdateQueue:
     Type: AWS::SQS::Queue
@@ -343,7 +333,7 @@ Resources:
       QueueName: !Sub characters-to-update-queue-${EnvironmentType}
       DelaySeconds: 0
       ReceiveMessageWaitTimeSeconds: 20
-      RedrivePolicy: 
+      RedrivePolicy:
         deadLetterTargetArn: !GetAtt CharactersToUpdateDLQ.Arn
         maxReceiveCount: 3
       VisibilityTimeout: 30
@@ -372,28 +362,6 @@ Resources:
             BatchSize: 1
             Queue: !GetAtt CharactersToUpdateQueue.Arn
 
-  UpdateSeasonsSchedule:
-    Type: AWS::Events::Rule
-    Properties:
-      ScheduleExpression: cron(0 0 1 * ? *)
-      Name: !Sub update-seasons-rule-${EnvironmentType}
-      State: !If
-        - IsProdEnvironment
-        - ENABLED
-        - DISABLED
-      Targets:
-        - Arn: !GetAtt UpdateSeasons.Arn
-          Id: LambdaTarget
-  
-  UpdateSeasonsPermission: 
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: !Ref UpdateSeasons
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: 
-        !GetAtt UpdateSeasonsSchedule.Arn
-
   UpdateSeasons:
     Type: AWS::Serverless::Function
     Properties:
@@ -403,29 +371,20 @@ Resources:
       MemorySize: 256
       Timeout: 180
       Role: !GetAtt ScheduleLambdaRole.Arn
+      Events:
+        MonthlySchedule:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub update-seasons-rule-${EnvironmentType}
+            ScheduleExpression: cron(0 0 1 * ? *)
+            FlexibleTimeWindow:
+              Mode: "OFF"
+            State: !If
+              - IsProdEnvironment
+              - ENABLED
+              - DISABLED
+            RoleArn: !GetAtt SchedulerInvokeRole.Arn
 
-  InsertSeiyuuRule:
-    Type: AWS::Events::Rule
-    Properties:
-      ScheduleExpression: cron(0 1 ? * SUN *)
-      Name: !Sub insert-seiyuu-rule-${EnvironmentType}
-      State: !If
-        - IsProdEnvironment
-        - ENABLED
-        - DISABLED
-      Targets:
-        - Arn: !GetAtt InsertSeiyuu.Arn
-          Id: LambdaTarget
-
-  InsertSeiyuuPermission: 
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: !Ref InsertSeiyuu
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: 
-        !GetAtt InsertSeiyuuRule.Arn
-  
   InsertSeiyuu:
     Type: AWS::Serverless::Function
     Properties:
@@ -435,6 +394,19 @@ Resources:
       MemorySize: 256
       Timeout: 900
       Role: !GetAtt UpdateLambdaRole.Arn
+      Events:
+        WeeklySchedule:
+          Type: ScheduleV2
+          Properties:
+            Name: !Sub insert-seiyuu-rule-${EnvironmentType}
+            ScheduleExpression: cron(0 1 ? * SUN *)
+            FlexibleTimeWindow:
+              Mode: "OFF"
+            State: !If
+              - IsProdEnvironment
+              - ENABLED
+              - DISABLED
+            RoleArn: !GetAtt SchedulerInvokeRole.Arn
 
 Globals:
   Function:

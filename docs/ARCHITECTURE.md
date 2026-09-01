@@ -18,11 +18,11 @@ Seiyuu.moe is split into a Nuxt frontend under `App/` and a .NET backend under `
 
 - `SeiyuuMoe.Domain` contains entities, comparison entities, repository interfaces, schedule items, publisher contracts, and MAL update data contracts.
 - `SeiyuuMoe.Application` contains query handlers, DTOs, extension methods, and application-level Autofac registrations.
-- `SeiyuuMoe.Infrastructure` contains external-service implementations for Jikan, AWS S3/SQS, configuration, and logging.
+- `SeiyuuMoe.Infrastructure` contains external-service implementations for Tenrai, AWS S3/SQS, configuration, and logging.
 - `SeiyuuMoe.Infrastructure.Database` contains Entity Framework Core repositories, configuration, and migrations.
 - `SeiyuuMoe.API` contains ASP.NET Core controllers, startup, hosting, and dependency-injection wiring.
-- `SeiyuuMoe.MalBackgroundJobs.Application` contains background-job handlers and helpers for MAL/Jikan update workflows.
-- `SeiyuuMoe.MalBackgroundJobs.Lambda` exposes background jobs as AWS Lambda functions.
+- `SeiyuuMoe.MalBackgroundJobs.Application` contains background-job handlers and helpers for MAL/Tenrai update workflows.
+- `SeiyuuMoe.MalBackgroundJobs.Lambda` exposes background jobs as AWS Lambda functions triggered by Amazon EventBridge Scheduler (defined in `application.yaml` using SAM `ScheduleV2` events). The security stack lives in `API/Environment/security.yaml`. Both templates are validated with `sam validate` or `cfn-lint` after changes.
 - `SeiyuuMoe.MalBackgroundJobs.LocalLambdaRunner` provides local runners for Lambda-style workflows.
 
 ## Backend Flow
@@ -38,7 +38,7 @@ Backend tests are split by scope:
 - `SeiyuuMoe.Tests.E2E` covers API controller flows.
 - `Tests/SeiyuuMoe.Tests.Domain` covers domain comparison entities.
 - `Tests/SeiyuuMoe.Tests.Infrastructure.Database` covers repository persistence behavior.
-- `Tests/SeiyuuMoe.Tests.Integration` covers Jikan client integration.
+- `Tests/SeiyuuMoe.Tests.Integration` covers Tenrai client integration.
 - `SeiyuuMoe.Tests.Common` contains shared builders, stubs, helpers, and test data.
 
 Run the narrowest relevant test project first. Database, integration, and E2E tests may require local configuration or external services.

@@ -1,4 +1,14 @@
-### Version 2.3 - 23 August 2020 (latest)
+### Version 2.4 - 30 August 2026 (latest)
+
+* Migrated MAL background-job schedules from EventBridge Rules (`AWS::Events::Rule`) to Amazon EventBridge Scheduler (`ScheduleV2`). All six schedules preserve their existing cron expressions, names, and ENABLED/DISABLED state per environment.
+* Migrated MAL data provider from JikanDotNet to [Tenrai.Net](https://www.nuget.org/packages/Tenrai.Net) 3.1.0.
+  * Tenrai is the official successor to Jikan v4 and uses the same REST schema.
+  * `JikanService` renamed to `TenraiService`; `JikanParserHelper` renamed to `MalParserHelper`.
+  * Lambda client initialization centralised in a shared `TenraiClientFactory`.
+  * Added optional `TenraiServerKey` SSM parameter for authenticated (unlimited daily) tier.
+  * `DelayBetweenCallsInSeconds` in `InsertSeiyuuHandler` should be set to 0 after deploy; Tenrai.Net handles rate limiting internally.
+
+### Version 2.3 - 23 August 2020
 
 * Fix season displaying in anime card
 * Rework mobile comparison tables and timeline to include images

@@ -40,6 +40,15 @@ dotnet test API/SeiyuuMoe.Tests.Component/SeiyuuMoe.Tests.Component.csproj
 
 There is currently no top-level solution file. Prefer targeted `dotnet` commands against the relevant project file. Some integration, database, and E2E tests may require external services or local configuration.
 
+Infrastructure template validation (run after editing any CloudFormation or SAM file):
+
+```bash
+sam validate -t API/SeiyuuMoe.MalBackgroundJobs.Lambda/application.yaml
+sam validate -t API/Environment/security.yaml
+```
+
+If SAM CLI is not installed, use `cfn-lint` on the same files as a fallback.
+
 ## Working Rules
 
 - Keep changes scoped to the relevant side of the repo unless the behavior crosses the frontend/API boundary.
@@ -47,6 +56,7 @@ There is currently no top-level solution file. Prefer targeted `dotnet` commands
 - Preserve the current backend layering: domain model and repository contracts in `SeiyuuMoe.Domain`, use-case/query logic in application projects, external services and persistence in infrastructure projects, and HTTP wiring in `SeiyuuMoe.API`.
 - For frontend work, follow the existing Nuxt directory conventions and reuse shared components under `App/components/shared/` when practical.
 - Do not commit generated Mac resource-fork files such as `._*`.
+- When changing CloudFormation or SAM templates under `API/`, run `sam validate -t <template>` on every edited template before considering the change done. If SAM CLI is unavailable, run `cfn-lint` on those files instead.
 
 ## Documentation Rule
 
